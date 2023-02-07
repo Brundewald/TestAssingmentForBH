@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Code.UI
 {
-    internal class FindLobbyView : MonoBehaviour, IScreen
+    public sealed class FindLobbyView : MonoBehaviour, IScreen
     {
         [SerializeField] private Button _backButton;
         [SerializeField] private Button _hostButton;
@@ -18,11 +18,18 @@ namespace Code.UI
         public event Action HostGame = delegate { };
         public event Action<string> JoinGame = delegate { };
         
+        /// <summary>
+        /// Change screen state on screen switch event
+        /// </summary>
+        /// <param name="state"></param>
         public void ChangeScreenState(bool state)
         {
             gameObject.SetActive(state);
         }
 
+        /// <summary>
+        /// Add subscribers to buttons
+        /// </summary>
         private void Awake()
         {
             _backButton.onClick.AddListener(SwitchToMain);
@@ -30,6 +37,9 @@ namespace Code.UI
             _joinButton.onClick.AddListener(JoinToServer);
         }
 
+        /// <summary>
+        /// Subscribe to network manager events
+        /// </summary>
         private void OnEnable()
         {
             _inputField.text = "localhost";
@@ -37,12 +47,18 @@ namespace Code.UI
             CustomNetworkManager.ClientDisconnected += OnClientDisconnected;
         }
 
+        /// <summary>
+        /// Checks input field if its empty button "Join" will be inactive
+        /// </summary>
         private void FixedUpdate()
         {
             if (!_tryingToConnect)
                 _joinButton.interactable = !_inputField.text.Equals("");
         }
 
+        /// <summary>
+        /// Unsubscribe from custom events and reset input field
+        /// </summary>
         private void OnDisable()
         {
             _inputField.text = "";
@@ -50,6 +66,9 @@ namespace Code.UI
             CustomNetworkManager.ClientDisconnected -= OnClientDisconnected;
         }
 
+        /// <summary>
+        /// Remove subscribers from buttons
+        /// </summary>
         private void OnDestroy()
         {
             _backButton.onClick.RemoveAllListeners();
@@ -57,11 +76,18 @@ namespace Code.UI
             _joinButton.onClick.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Start host
+        /// </summary>
         private void StartHost()
         {
             HostGame.Invoke();
         }
 
+        /// <summary>
+        /// Trey to join to the server by IP
+        /// Set Join button inactive while trying to connect
+        /// </summary>
         private void JoinToServer()
         {
             var networkAddress = _inputField.text;
@@ -70,19 +96,28 @@ namespace Code.UI
             _joinButton.interactable = false;
         }
 
+        /// <summary>
+        /// Switch to main menu screen
+        /// </summary>
         private void SwitchToMain()
         {
             SwitchScreen.Invoke(true);
             ChangeScreenState(false);
         }
 
-        public void OnClientConnected()
+        /// <summary>
+        /// If client successful connected switch of menu
+        /// </summary>
+        private void OnClientConnected()
         {
             _joinButton.interactable = true;
             ChangeScreenState(false);
         }
 
-        public void OnClientDisconnected()
+        /// <summary>
+        /// Reset Join button on disconnected
+        /// </summary>
+        private void OnClientDisconnected()
         {
             _joinButton.interactable = true;
         }

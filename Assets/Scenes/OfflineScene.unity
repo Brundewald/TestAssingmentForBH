@@ -1642,7 +1642,7 @@ MonoBehaviour:
   onlineScene: Assets/Scenes/MultiplayerScene.unity
   transport: {fileID: 1272183894}
   networkAddress: localhost
-  maxConnections: 100
+  maxConnections: 4
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 4018769527174605465, guid: 159305c37ed5ddc4ca71d40c19a477c7, type: 3}
   autoCreatePlayer: 1
@@ -1653,6 +1653,7 @@ MonoBehaviour:
   _playerLobbyPrefab: {fileID: 4902503684953506502, guid: a6d1deec4e8e7ba4bb37919f683eb13f, type: 3}
   _playerGamePrefab: {fileID: 6814544671840518910, guid: ac857a2b65cdb2b42b8480b3932d2a30, type: 3}
   _customSpawnSystemPrefab: {fileID: 4547746586266127547, guid: df35b1b8dcbcfd1449b6d1ce71a34393, type: 3}
+  _timeToRestartGame: 5
 --- !u!1 &1419492407
 GameObject:
   m_ObjectHideFlags: 0

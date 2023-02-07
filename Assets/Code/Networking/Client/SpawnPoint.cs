@@ -2,7 +2,7 @@
 
 namespace Code.Networking
 {
-    public class SpawnPoint: MonoBehaviour
+    public sealed class SpawnPoint: MonoBehaviour
     {
         private void OnDrawGizmos()
         {

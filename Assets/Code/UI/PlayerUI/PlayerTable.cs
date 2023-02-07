@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Code.UI.PlayerUI
 {
-    public class PlayerTable: MonoBehaviour
+    public sealed class PlayerTable: MonoBehaviour
     {
         [SerializeField] private Transform _content;
         [SerializeField] private List<TableField>  _tableFields;

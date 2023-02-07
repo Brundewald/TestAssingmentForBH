@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Code.UI.PlayerUI
 {
-    public class PlayerLobbyUIView : MonoBehaviour
+    public sealed class PlayerLobbyUIView : MonoBehaviour
     {
         [SerializeField] private Button _backButton;
         [SerializeField] private TMP_InputField _nicknameInput;
@@ -18,6 +18,10 @@ namespace Code.UI.PlayerUI
 
         public event Action<string> PlayerReady = delegate {  };
 
+        /// <summary>
+        /// Set example of NetworkBehavior and subscribe to it events
+        /// </summary>
+        /// <param name="playerLobbyView"></param>
         public void SetupLobbyObject(PlayerLobbyView playerLobbyView)
         {
             _lobbyView = playerLobbyView;
@@ -25,17 +29,26 @@ namespace Code.UI.PlayerUI
             PlayerReady += _lobbyView.OnPlayerReady;
         }
 
+        /// <summary>
+        /// Add listeners to back and ready buttons 
+        /// </summary>
         private void Awake()
         {
             _backButton.onClick.AddListener(BackButtonPressed);
-            _spawnButton.onClick.AddListener(SpawnPlayer);
+            _spawnButton.onClick.AddListener(OnPlayerReady);
         }
 
+        /// <summary>
+        /// Checks entered name to min size 
+        /// </summary>
         private void FixedUpdate()
         {
             _spawnButton.interactable = !_nicknameInput.text.Equals("") && _nicknameInput.text.Length >= _minNicknameLength;
         }
 
+        /// <summary>
+        /// Unsubscribe from events
+        /// </summary>
         private void OnDestroy()
         {
             _backButton.onClick.RemoveAllListeners();
@@ -44,12 +57,18 @@ namespace Code.UI.PlayerUI
             PlayerReady -= _lobbyView.OnPlayerReady;
         }
 
+        /// <summary>
+        /// Rise event on back button pressed
+        /// </summary>
         private void BackButtonPressed()
         {
             BackToMain.Invoke();
         }
 
-        private void SpawnPlayer()
+        /// <summary>
+        /// Set player name, rise event on player ready and deactivate UI
+        /// </summary>
+        private void OnPlayerReady()
         {
             var playerNickname = _nicknameInput.text;
             PlayerReady.Invoke(playerNickname);

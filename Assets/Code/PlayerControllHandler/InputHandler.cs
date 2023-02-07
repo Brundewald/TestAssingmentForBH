@@ -1,10 +1,11 @@
 ﻿using System;
+using Code.Networking;
 using Mirror;
 using UnityEngine;
 
 namespace Code.InputManagement
 {
-    public class InputHandler: NetworkBehaviour
+    public sealed class InputHandler: NetworkBehaviour
     {
         private const string Vertical = "Vertical";
         private const string Horizontal = "Horizontal";
@@ -21,7 +22,12 @@ namespace Code.InputManagement
         {
             Cursor.lockState = CursorLockMode.Locked;
         }
-        
+
+        public override void OnStopLocalPlayer()
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+
         [ClientCallback]
         private void Update()
         {
@@ -30,12 +36,12 @@ namespace Code.InputManagement
             GetMouseHorizontal();
             GetMouseVertical();
             GetAttackButton();
+            GetEscButton();
         }
 
-        [ClientCallback]
-        private void OnDestroy()
+        private void GetEscButton()
         {
-            Cursor.lockState = CursorLockMode.None;
+            if (isOwned && Input.GetKeyDown(KeyCode.Escape)) CustomNetworkManager.Instance.Disconnect();
         }
 
         private void GetHorizontal()

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Code.Networking
 {
-    public class CameraHandler: NetworkBehaviour
+    public sealed class CameraHandler: NetworkBehaviour
     {
         [SerializeField] private InputHandler _inputHandler;
         [SerializeField, Range(0, 1)] private float _sensitivity = .5f;
@@ -16,17 +16,20 @@ namespace Code.Networking
         private float _xRotation;
         private float _yRotation;
 
-
+        /// <summary>
+        /// Subscribe to local input handler events and setup local camera
+        /// </summary>
         public override void OnStartLocalPlayer()
         {
-            if (!isOwned) return;
             _inputHandler.MouseHorizontalAxisChange += GetMouseHorizontal;
             _inputHandler.MouseVerticalAxisChange += GetMouseVertical;
-            SetUpCamera();
+            SetupCamera();
         }
 
-        [Client]
-        private void SetUpCamera()
+        /// <summary>
+        /// Set local parent, position, rotation and scale
+        /// </summary>
+        private void SetupCamera()
         {
             _camera = Camera.main;
             _camera.transform.SetParent(transform);
@@ -36,22 +39,20 @@ namespace Code.Networking
             _cameraSet = true;
         }
 
+        /// <summary>
+        /// Use client callback to rotate camera
+        /// </summary>
         [ClientCallback]
         private void Update()
-        {
-            if(isServer) RotateCamera();
-            else CmdRotateCamera();
-        }
-
-        [Client]
-        private void CmdRotateCamera()
         {
             RotateCamera();
         }
 
+        /// <summary>
+        /// Rotate local camera by xAxis and player by yAxis
+        /// </summary>
         private void RotateCamera()
         {
-            if (!isOwned) return;
             if (!_cameraSet) return;
             _xRotation += _mouseVertical * _sensitivity;
             _yRotation = _mouseHorizontal * _sensitivity;
@@ -59,11 +60,19 @@ namespace Code.Networking
             transform.Rotate(Vector3.up * _yRotation, Space.World);
         }
 
+        /// <summary>
+        /// Get mouse horizontal axis value
+        /// </summary>
+        /// <param name="value"></param>
         private void GetMouseHorizontal(float value)
         {
             _mouseHorizontal = value;
         }
-
+        
+        /// <summary>
+        /// Get mouse vertical axis value
+        /// </summary>
+        /// <param name="value"></param>
         private void GetMouseVertical(float value)
         {
             _mouseVertical = value;
