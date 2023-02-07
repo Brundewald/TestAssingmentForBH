@@ -10,23 +10,37 @@ namespace Code.Networking
 {
     public class CustomNetworkManager: NetworkManager
     {
+        #region Properties
         private const string Spawnable = "SpawnablePrefabs";
         
         [Scene, SerializeField] private string LobbyScene = string.Empty;
-        
         [Header("Room"), SerializeField] private PlayerLobbyView _playerLobbyPrefab = null;
         [Header("Game"), SerializeField] private PlayerGameView _playerGamePrefab;
+        [SerializeField] private CustomSpawnSystem _customSpawnSystemPrefab;
         
         private static CustomNetworkManager _instance;
+        private CustomSpawnSystem _spawnSystem;
+
+        #endregion
+        
+        #region PublicProperties
         public List<PlayerLobbyView> PlayersInLobby { get; } = new List<PlayerLobbyView>();
         public List<PlayerGameView> PlayersInGame { get; } = new List<PlayerGameView>();
-
         public static CustomNetworkManager Instance => _instance;
+        #endregion        
         
+        #region Events
         public static event Action ClientConnected = delegate {  };
         public static event Action ClientDisconnected = delegate {  };
-
-        public override void OnStartServer() => spawnPrefabs = Resources.LoadAll<GameObject>(Spawnable).ToList();
+        public static event Action PlayersCountChange = delegate {  };
+        #endregion
+        
+        public override void OnStartServer()
+        {
+            spawnPrefabs = Resources.LoadAll<GameObject>(Spawnable).ToList();
+            _spawnSystem = Instantiate(_customSpawnSystemPrefab);
+            NetworkServer.Spawn(_spawnSystem.gameObject);
+        }
 
         public override void OnStartClient()
         {
@@ -45,6 +59,7 @@ namespace Code.Networking
 
         public override void OnClientDisconnect()
         {
+            
             base.OnClientDisconnect();
             ClientDisconnected.Invoke();
         }
@@ -99,11 +114,42 @@ namespace Code.Networking
             }
         }
 
-        private void Awake()
+        public override void OnServerReady(NetworkConnectionToClient connection)
         {
-            if (_instance is null)
+            base.OnServerReady(connection);
+        }
+
+        public override void Awake()
+        {
+            _instance ??= this;
+            base.Awake();
+        }
+
+        public void AddPlayerOnMap(PlayerGameView player)
+        {
+            PlayersInGame.Add(player);
+            PlayersCountChange.Invoke();
+        }
+
+        public void RemovePlayerFromMap(PlayerGameView player)
+        {
+            PlayersInGame.Remove(player);
+            PlayersCountChange.Invoke();
+        }
+
+        public void PlayerHit(uint attackerId, uint targetId)
+        {
+            foreach (var player in PlayersInGame)
             {
-                _instance = this;
+                if (player.netId.Equals(attackerId))
+                {
+                    player.AddScore();
+                }
+
+                if (player.netId.Equals(targetId))
+                {
+                    //player.Hit(targetId);
+                }
             }
         }
 
@@ -112,10 +158,7 @@ namespace Code.Networking
             player.PlayerReadyToSpawn -= OnPlayerReadyToSpawn;
             var connection = player.connectionToClient;
             NetworkServer.Destroy(connection.identity.gameObject);
-            
-            PlayerGameView playerGameInstance = Instantiate(_playerGamePrefab);
-            NetworkServer.ReplacePlayerForConnection(connection, playerGameInstance.gameObject);
-            playerGameInstance.CmdSetDisplayName(player);
+            _spawnSystem.SpawnPlayer(player.DisplayName, _playerGamePrefab, connection);
         }
     }
 }

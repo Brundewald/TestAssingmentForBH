@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Code.UI
 {
-    internal class LobbyView : MonoBehaviour, IScreen
+    internal class FindLobbyView : MonoBehaviour, IScreen
     {
         [SerializeField] private Button _backButton;
         [SerializeField] private Button _hostButton;
@@ -32,6 +32,7 @@ namespace Code.UI
 
         private void OnEnable()
         {
+            _inputField.text = "localhost";
             CustomNetworkManager.ClientConnected += OnClientConnected;
             CustomNetworkManager.ClientDisconnected += OnClientDisconnected;
         }

@@ -1,5 +1,6 @@
 using System;
 using Code.Networking;
+using Code.UI.PlayerUI;
 using Mirror;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ public class PlayerLobbyView : NetworkBehaviour
         
     public string DisplayName { get; private set; }
     public event Action<PlayerLobbyView> PlayerReadyToSpawn = delegate { };
-    
+
     public override void OnStartLocalPlayer()
     {
         CmdCreateUI();
@@ -19,40 +20,32 @@ public class PlayerLobbyView : NetworkBehaviour
         _networkManager.PlayersInLobby.Add(this);
     }
 
+    public void OnBackToMain()
+    {
+        _networkManager.Disconnect();
+    }
+
+    public void OnPlayerReady(string playerNickname)
+    {
+        CmdSetPlayerName(playerNickname);
+    }
 
     public override void OnStopClient()
     {
         _networkManager.PlayersInLobby.Remove(this);
     }
-    
+
     private void Awake()
     {
         _networkManager = CustomNetworkManager.Instance;
     }
 
-    private void OnBackToMain()
-    {
-        _networkManager.Disconnect();
-    }
-
-    private void OnPlayerReady(string playerNickname)
-    {
-        CmdSetPlayerName(playerNickname);
-        CmdDestroyUI();
-    }
-    
     [Command]
     private void CmdCreateUI()
     {
         TargetCreateUI();
     }
 
-    [Command]
-    private void CmdDestroyUI()
-    {
-        TargetDestroyUI();
-    }
-    
     [Command]
     private void CmdSetPlayerName(string playerNickname)
     {
@@ -64,15 +57,6 @@ public class PlayerLobbyView : NetworkBehaviour
     private void TargetCreateUI()
     {
         _playerLobbyUI = Instantiate(_uiPrefab, transform);
-        _playerLobbyUI.PlayerReady += OnPlayerReady;
-        _playerLobbyUI.BackToMain += OnBackToMain;
-    }
-    
-    [TargetRpc]
-    private void TargetDestroyUI()
-    {
-        _playerLobbyUI.PlayerReady -= OnPlayerReady;
-        _playerLobbyUI.BackToMain -= OnBackToMain;
-        Destroy(_playerLobbyUI);
+        _playerLobbyUI.SetupLobbyObject(this);
     }
 }
