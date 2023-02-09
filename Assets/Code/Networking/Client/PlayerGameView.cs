@@ -107,24 +107,6 @@ namespace Code.Networking
         [Command]
         private void OnPlayerHit(PlayerGameView collided)
         {
-            if(isServer)
-            {
-                PlayerHit(collided);
-            }
-            else
-            {
-                ServerOnPlayerHit(collided);
-            }
-            
-        }
-
-        /// <summary>
-        /// If attacker is a client it ask server to perform PlayerHit method
-        /// </summary>
-        /// <param name="collided">attacked player</param>
-        [Server]
-        private void ServerOnPlayerHit(PlayerGameView collided)
-        {
             PlayerHit(collided);
         }
 
